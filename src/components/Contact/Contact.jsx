@@ -1,115 +1,116 @@
-import React, { useRef, useState } from "react";
-import emailjs from "@emailjs/browser";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import React from "react";
+import { FiAtSign, FiDownload, FiGithub, FiLinkedin, FiSend } from "react-icons/fi";
+import { SiLeetcode } from "react-icons/si";
+import { profile } from "../../portfolioData";
 
-const Contact = () => {
-  const form = useRef();
-  const [isSent, setIsSent] = useState(false);
+const contactLinks = [
+  { label: "Email", value: profile.email, placeholder: "Email not provided", href: profile.email ? `mailto:${profile.email}` : null, icon: <FiAtSign /> },
+  { label: "LinkedIn", value: profile.linkedin, placeholder: "Profile URL not provided", href: profile.linkedin, icon: <FiLinkedin /> },
+  { label: "GitHub", value: profile.github, placeholder: null, href: profile.github, icon: <FiGithub /> },
+  { label: "LeetCode", value: profile.leetcode, placeholder: null, href: profile.leetcode, icon: <SiLeetcode /> },
+];
 
-  const sendEmail = (e) => {
-    e.preventDefault();
+const handleContactSubmit = (event) => {
+  event.preventDefault();
 
-    emailjs
-      .sendForm(
-        "service_axbtt7a",  // Replace with your EmailJS Service ID
-        "template_1ziboq3",  // Replace with your EmailJS Template ID
-        form.current,
-        "Rz7W9pVF0HdDryNNL"  // Replace with your EmailJS Public Key
-      )
-      .then(
-        () => {
-          setIsSent(true);
-          form.current.reset(); // Reset form fields after sending
-          toast.success("Message sent successfully! ✅", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "dark",
-          });
-        },
-        (error) => {
-          console.error("Error sending message:", error);
-          toast.error("Failed to send message. Please try again.", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "dark",
-          });
-        }
-      );
-  };
+  const formData = new FormData(event.currentTarget);
+  const name = formData.get("name").trim();
+  const email = formData.get("email").trim();
+  const subject = formData.get("subject").trim();
+  const message = formData.get("message").trim();
+  const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
 
-  return (
-    <section
-      id="contact"
-      className="flex flex-col items-center justify-center py-24 px-[12vw] md:px-[7vw] lg:px-[20vw]"
-    >
-      {/* Toast Container */}
-      <ToastContainer />
+  window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+};
 
-      {/* Section Title */}
-      <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold text-white">CONTACT</h2>
-        <div className="w-32 h-1 bg-purple-500 mx-auto mt-4"></div>
-        <p className="text-gray-400 mt-4 text-lg font-semibold">
-          I’d love to hear from you—reach out for any opportunities or questions!
-        </p>
+const Contact = () => (
+  <section id="contact" className="section-shell section-block contact-section">
+    <div className="section-heading">
+      <p className="section-kicker">LET’S CONNECT</p>
+      <h2>Have a project in mind?</h2>
+      <p>I’m open to meaningful conversations, collaboration, and early-career opportunities.</p>
+    </div>
+
+    <div className="contact-layout">
+      <div className="contact-details">
+        <h3>Find me online</h3>
+        <p>Use one of the available profiles, or add your contact details to complete this section.</p>
+        <div className="contact-link-list">
+          {contactLinks.map((item) => {
+            const content = (
+              <>
+                <span className="contact-link-icon">{item.icon}</span>
+                <span className="contact-link-text">
+                  <span>{item.label}</span>
+                  <span className={item.value ? "contact-link-value" : "contact-placeholder"}>
+                    {item.value || item.placeholder}
+                  </span>
+                </span>
+                {item.href && <span className="contact-link-arrow" aria-hidden="true">↗</span>}
+              </>
+            );
+
+            return item.href ? (
+              <a className="contact-link-card" key={item.label} href={item.href} target={item.href.startsWith("mailto:") ? undefined : "_blank"} rel={item.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}>
+                {content}
+              </a>
+            ) : (
+              <div className="contact-link-card contact-link-disabled" key={item.label}>
+                {content}
+              </div>
+            );
+          })}
+        </div>
+        {profile.resume ? (
+          <a className="button-secondary resume-download" href={profile.resume} download>
+            <FiDownload aria-hidden="true" /> Download resume
+          </a>
+        ) : (
+          <button className="button-secondary resume-download" type="button" disabled>
+            <FiDownload aria-hidden="true" /> Resume PDF not provided
+          </button>
+        )}
       </div>
 
-      {/* Contact Form */}
-      <div className="mt-8 w-full max-w-md bg-[#0d081f] p-6 rounded-lg shadow-lg border border-gray-700">
-        <h3 className="text-xl font-semibold text-white text-center">
-          Connect With Me <span className="ml-1">🚀</span>
-        </h3>
-
-        <form ref={form} onSubmit={sendEmail} className="mt-4 flex flex-col space-y-4">
-          <input
-            type="email"
-            name="user_email"
-            placeholder="Your Email"
-            required
-            className="w-full p-3 rounded-md bg-[#131025] text-white border border-gray-600 focus:outline-none focus:border-purple-500"
-          />
-          <input
-            type="text"
-            name="user_name"
-            placeholder="Your Name"
-            required
-            className="w-full p-3 rounded-md bg-[#131025] text-white border border-gray-600 focus:outline-none focus:border-purple-500"
-          />
-          <input
-            type="text"
-            name="subject"
-            placeholder="Subject"
-            required
-            className="w-full p-3 rounded-md bg-[#131025] text-white border border-gray-600 focus:outline-none focus:border-purple-500"
-          />
-          <textarea
-            name="message"
-            placeholder="Message"
-            rows="4"
-            required
-            className="w-full p-3 rounded-md bg-[#131025] text-white border border-gray-600 focus:outline-none focus:border-purple-500"
-          />
-          
-          {/* Send Button */}
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-500 py-3 text-white font-semibold rounded-md hover:opacity-90 transition"
-          >
-            Send
+      <div className="glass-card contact-form-card">
+        <div className="contact-form-heading">
+          <div>
+            <p className="section-kicker">MESSAGE</p>
+            <h3>Send a note</h3>
+          </div>
+          <FiSend aria-hidden="true" />
+        </div>
+        <form
+          className="contact-form-fields"
+          aria-describedby="contact-form-note"
+          onSubmit={handleContactSubmit}
+        >
+          <label>
+            Name
+            <input type="text" name="name" autoComplete="name" placeholder="Your name" required />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" autoComplete="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Subject
+            <input type="text" name="subject" placeholder="What would you like to discuss?" required />
+          </label>
+          <label>
+            Message
+            <textarea name="message" rows="4" placeholder="Write your message..." required />
+          </label>
+          <button type="submit" className="button-primary contact-submit">
+            Continue in email app
           </button>
         </form>
+        <p id="contact-form-note" className="form-note">
+          Submitting opens your email app with the message filled in. You can review and send it there.
+        </p>
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
 export default Contact;
